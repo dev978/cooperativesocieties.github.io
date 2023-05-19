@@ -1,0 +1,305 @@
+<html>
+<head>
+<meta name="description" content="DevLabs - Get driving directions">
+  <meta charset="utf-8">
+  <meta name="viewport" content="initial-scale=1, maximum-scale=1, user-scalable=no">
+  <title>Treasury and sub-Treasury</title>
+  <style>
+    html, body, #viewDiv {
+      padding: 0;
+      margin: 0;
+      height: 100%;
+      width: 100%;
+    }
+    .esri-view .esri-directions {
+
+      max-height:calc(100vh - 90px) !important;
+    }
+
+  </style>
+  <link rel="stylesheet" href="https://js.arcgis.com/4.26/esri/themes/light/main.css">
+  <script src="https://js.arcgis.com/4.26"></script>
+  <script>
+    require([
+        "esri/config",
+        "esri/Map",
+        "esri/views/MapView",
+        "esri/widgets/Directions",
+        "esri/symbols/SimpleMarkerSymbol",
+        "esri/layers/RouteLayer",
+        "esri/widgets/Expand",
+        "esri/widgets/Sketch",
+        "esri/layers/GraphicsLayer",
+        "esri/widgets/Search",
+        "esri/Basemap",
+        "esri/layers/VectorTileLayer",
+        "esri/widgets/BasemapGallery",
+        "esri/layers/CSVLayer",
+        "esri/Color",
+        "esri/renderers/SimpleRenderer",
+        "esri/layers/FeatureLayer",
+        "esri/layers/GeoJSONLayer",
+        "esri/WebMap",
+        "esri/renderers/ClassBreaksRenderer",
+        "esri/widgets/Legend",
+        "esri/widgets/Print",
+        "esri/widgets/LayerList",
+        "esri/layers/support/Field",
+        "esri/Graphic",
+        "esri/widgets/BasemapToggle"
+      ],(esriConfig, Map, MapView, Directions, SimpleMarkerSymbol, RouteLayer,Expand,Sketch,GraphicsLayer,Search,Basemap,VectorTileLayer,BasemapGallery,
+         CSVLayer,Color,SimpleRenderer,FeatureLayer,GeoJSONLayer,WebMap,ClassBreaksRenderer,Legend,Print,LayerList,Field,Graphic,BasemapToggle)=> {
+  
+        const url = "https://docs.google.com/spreadsheets/d/e/2PACX-1vS3pJkinoSQV5PTGDATSv23V9es2dzri-l745w-F-szjV6mUR4khatezqAL5I7pqXodyc09_gkrTjQq/pub?output=csv";
+
+
+        const template = {
+          title: "Treasury",
+         
+        };
+
+
+        const labelClass = {
+          // autocasts as new LabelClass()
+          symbol: {
+            type: "text", // autocasts as new TextSymbol()
+            color: "green",
+            // backgroundColor: [213, 184, 255, 0.75],
+            // borderLineColor: "green",
+            // borderLineSize: 1,
+            yoffset: -3,
+            font: {
+              // autocast as new Font()
+              family: "Playfair Display",
+              size: 8,
+              weight: "bold"
+            }
+          },
+          labelPlacement: "above-center",
+          labelExpressionInfo: {
+            expression: "$feature.NAME"
+          }
+        };
+        
+
+
+        const renderer = {
+            type: "unique-value",
+            field: "TYPE",
+            orderByClassesEnabled: true,
+            // features will draw in the order
+            // specified in uniqueValueInfos
+            uniqueValueInfos: [{
+                value: "Treasury",
+                symbol: {
+                type: "simple-marker",
+                color: "red",
+                outline: {
+              color: "yellow"
+            }
+                // ...other symbol properties
+                }
+            }, {
+                value: "Sub-treasury",
+                symbol: {
+                type: "simple-marker",
+                color: "blue",
+                outline: {
+              color: "yellow"
+            }
+                // ...other symbol properties
+                }
+            }]
+}
+
+        
+      
+
+          const geojsonLayer = new CSVLayer({
+            url: url,
+            copyright: "GIS Cell Nainital",
+            title:"Treasury",
+            labelingInfo: [labelClass],
+            popupTemplate: {
+            title: "{NAME}",
+            content: [
+              {
+                type: "text",
+                text: "{TYPE} code is {CODE} with total pensioners {TOT_PENSOR}"
+              },
+              {
+                type: "fields",
+                fieldInfos: [
+                  
+                  {
+                    fieldName: "HEAD_NAME",
+                    label: "CTO/TO"
+                  },
+                  {
+                    fieldName: "HEAD _MOBIL",
+                    label: "Contact"
+                  },
+                  {
+                    fieldName: "HEAD _LL",
+                    label: "Land Line"
+                  },
+                  {
+                    fieldName: "HEAD _EMAIL",
+                    label: "Email"
+                  },
+                  {
+                    fieldName: "DIST_NAME",
+                    label: "District"
+                  },
+                  {
+                    fieldName: "BLOCK_NAME",
+                    label: "Block"
+                  }
+                
+                  
+                ]
+              }
+            ]
+
+          },
+            renderer: renderer
+
+          });
+
+      
+
+        
+
+        
+        esriConfig.apiKey = "AAPK4f09e7172e124d579866370477a0a28eKbX73umbpKgJ_FX6o2wjosGmhy6Fbq4FPKPW-S3RZX9vdQWewsAZy9ckHfEOKHG8";
+
+        const routeLayer = new RouteLayer({
+          url: "https://route-api.arcgis.com/arcgis/rest/services/World/Route/NAServer/Route_World/"
+        });
+
+        const map = new Map({
+          basemap: "gray-vector"
+        });
+
+        map.add(geojsonLayer)
+
+        const view = new MapView({
+          container: "viewDiv",
+          map: map,
+          center: [79.48186092307404,29.28846777623414],
+          zoom: 9.8,
+          constraints: {
+            snapToZoom: false
+          }
+        });
+
+
+        
+        
+        view.popup.defaultPopupTemplateEnabled = true;
+
+        const legend = new Legend({
+          view: view
+        });
+
+        view.ui.add(legend, "bottom-left");
+
+        const directions = new Directions({
+          view: view,
+          layer:routeLayer
+        });
+     
+        view.ui.add(new Expand({
+          view:view,
+          content:directions,
+          expanded:false,
+          }), "top-left");
+
+        map.add(routeLayer)
+
+     
+
+        const graphicsLayer = new GraphicsLayer();
+
+        view.when(() => {
+          const sketch = new Sketch({
+            layer: graphicsLayer,
+            view: view,
+            // graphic will be selected as soon as it is created
+            creationMode: "update"
+          });
+
+          view.ui.add(new Expand({
+          view:view,
+          content:sketch,
+          expanded:false,
+          mode:"floating"}), "top-left");
+        });
+
+        const toggle = new BasemapToggle({
+          // 2 - Set properties
+          view: view, // view that provides access to the map's 'topo-vector' basemap
+          nextBasemap: "hybrid" // allows for toggling to the 'hybrid' basemap
+        });
+
+        // Add widget to the top right corner of the view
+        view.ui.add(toggle, "top-right");
+
+        // view.when(() => {
+        //     const print = new Print({
+        //       view: view,
+        //       // specify your own print service
+        //       printServiceUrl:
+        //         "https://utility.arcgisonline.com/arcgis/rest/services/Utilities/PrintingTools/GPServer/Export%20Web%20Map%20Task"
+        //     });
+
+        //     // Add widget to the top right corner of the view
+        //     view.ui.add(new Expand({
+        //       view:view,
+        //       content:print,
+        //       expanded:false,
+        //       mode:"floating"}), "top-left");
+        //  });
+      
+
+        const searchWidget = new Search({
+          view: view
+        });
+
+        // Add the search widget to the top right corner of the view
+        view.ui.add(searchWidget, {
+          position: "bottom-right"
+        });
+
+        view.ui.add(new Expand({
+          view:view,
+          content:search,
+          expanded:true,
+          mode:"floating"}), "top-right"); // Add to the map
+
+        view.when(() => {
+          search.watch("activeSource", (source) =>{
+            search.search();
+          });
+        });
+
+      // Zoom to custom level
+        search.goToOverride = (view, goToParams)=> {
+          return view.goTo(
+            {
+              center: goToParams.target.target,
+              zoom: 12,
+            },
+            goToParams.options
+          );
+        };
+      
+
+
+    });
+  </script>
+</head>
+<body>
+  <div id="viewDiv"></div>
+</body>
+</html>

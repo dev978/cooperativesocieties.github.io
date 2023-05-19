@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="description" content="DevLabs - Get driving directions">
+  <meta charset="utf-8">
+  <meta name="viewport" content="initial-scale=1, maximum-scale=1, user-scalable=no">
+  <title>COOPERATIVE SOCIETY</title>
+  <style>
+html, body, #viewDiv {
+padding: 0;
+margin: 0;
+height: 97.5%;
+width: 100%;
+}
+.esri-view .esri-directions {
+max-height:calc(100vh - 90px) !important;
+}
+#header {
+padding-top: 4px;
+padding-right: 15px;
+color: #444;
+font-size:30pt; text-align:right;font-weight:bold;
+height:70px;
+background: #fff;
+border-bottom: 1px solid #444;
+}
+#subheader {
+font-size:small;
+color: #444;
+text-align:right;
+padding-right:15px;
+}
+</style>
+<link rel="stylesheet" href="arcgis_js_v426_api\arcgis_js_v426_api\arcgis_js_api\javascript\4.26\@arcgis\core\assets\esri\themes\light\main.css"></link>
+<script src="arcgis_js_v426_api\arcgis_js_v426_api\arcgis_js_api\javascript\4.26\init.js"></script>
+  <script>
+    require([
+        "esri/config",
+        "esri/Map",
+        "esri/views/MapView",
+        "esri/widgets/Directions",
+        "esri/symbols/SimpleMarkerSymbol",
+        "esri/layers/RouteLayer",
+        "esri/widgets/Expand",
+        "esri/widgets/Sketch",
+        "esri/layers/GraphicsLayer",
+        "esri/widgets/Search",
+        "esri/Basemap",
+        "esri/layers/VectorTileLayer",
+        "esri/widgets/BasemapGallery",
+        "esri/layers/CSVLayer",
+        "esri/Color",
+        "esri/renderers/SimpleRenderer",
+        "esri/layers/FeatureLayer",
+        "esri/layers/GeoJSONLayer",
+        "esri/WebMap",
+        "esri/renderers/ClassBreaksRenderer",
+        "esri/widgets/Legend",
+        "esri/widgets/Print",
+        "esri/widgets/LayerList",
+        "esri/layers/support/Field",
+        "esri/Graphic",
+        "esri/widgets/BasemapToggle"
+      ],(esriConfig, Map, MapView, Directions, SimpleMarkerSymbol, RouteLayer,Expand,Sketch,GraphicsLayer,Search,Basemap,VectorTileLayer,BasemapGallery,
+         CSVLayer,Color,SimpleRenderer,FeatureLayer,GeoJSONLayer,WebMap,ClassBreaksRenderer,Legend,Print,LayerList,Field,Graphic,BasemapToggle)=> {
+  
+        const url = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQkkMTcY8owDimUyHdQVgjkWKAUGCUt5xrRoelYPvsF5rpkLiwIyQAG9_3i_EpZxWYbqDjgz2RBa6dT/pub?output=csv";
+
+
+        const template = {
+          title: "Coorperative Socity",
+         
+        };
+
+
+        const labelClass = {
+          // autocasts as new LabelClass()
+          symbol: {
+            type: "text", // autocasts as new TextSymbol()
+            color: "green",
+            // backgroundColor: [213, 184, 255, 0.75],
+            // borderLineColor: "green",
+            // borderLineSize: 1,
+            yoffset: -3,
+            font: {
+              // autocast as new Font()
+              family: "Playfair Display",
+              size: 8,
+              weight: "bold"
+            }
+          },
+          labelPlacement: "above-center",
+          labelExpressionInfo: {
+            expression: "$feature.CS_Name"
+          }
+        };
+        
+
+
+        const renderer = {
+          type: "simple",
+          field: "Place_ Name",
+          symbol: {
+            type: "simple-marker",
+            color: "orange",
+            outline: {
+              color: "white"
+            }
+            
+          }
+          
+        //   visualVariables: [{
+        //     type: "size",
+        //     field: "name",
+        //     stops: [{
+        //         value: 2.5,
+        //         size: "4px"
+        //       },
+        //       {
+        //         value: 8,
+        //         size: "40px"
+        //       }
+        //     ]
+        //   }]
+        };
+
+        
+      
+
+          const geojsonLayer = new CSVLayer({
+            url: url,
+            copyright: "GIS Cell Nainital (BASANT CHANDRA:GIS TECHNICIAN)",
+            title:"Coorperative Socity",
+            labelingInfo: [labelClass],
+            popupTemplate: {
+            title: "{CS_Name}",
+            content: [
+              {
+                type: "text",
+                text: "Cooperative socity Regestration no. {Reg_No} and formed in {Reg_Year} ."
+              },
+              {
+                type: "fields",
+                fieldInfos: [
+                  {
+                    fieldName: "Place_ Name",
+                    label: "Place Name"
+                  },
+                  {
+                    fieldName: "Mangr_Name",
+                    label: "Manager"
+                  },
+                  {
+                    fieldName: "Mangr_Mobile",
+                    label: "Mangr_Mno."
+                  },
+                  {
+                    fieldName: "Tot Member",
+                    label: "Total Member"
+                  },
+                  {
+                    fieldName: "Dist_Name",
+                    label: "District"
+                  },
+                  {
+                    fieldName: "Block_Name",
+                    label: "Block_Name"
+                  }
+                  
+                ]
+              }
+            ]
+
+          },
+            renderer: renderer
+
+          });
+
+      
+
+        
+
+        
+        esriConfig.apiKey = "AAPK4f09e7172e124d579866370477a0a28eKbX73umbpKgJ_FX6o2wjosGmhy6Fbq4FPKPW-S3RZX9vdQWewsAZy9ckHfEOKHG8";
+
+        const routeLayer = new RouteLayer({
+          url: "https://route-api.arcgis.com/arcgis/rest/services/World/Route/NAServer/Route_World/"
+        });
+
+        const map = new Map({
+          basemap: "gray-vector"
+        });
+
+        map.add(geojsonLayer)
+
+        const view = new MapView({
+          container: "viewDiv",
+          map: map,
+          center: [79.48186092307404,29.28846777623414],
+          zoom: 9.8,
+          constraints: {
+            snapToZoom: false
+          }
+        });
+
+
+        
+        
+        view.popup.defaultPopupTemplateEnabled = true;
+
+        const legend = new Legend({
+          view: view
+        });
+
+        view.ui.add(legend, "bottom-left");
+
+        const directions = new Directions({
+          view: view,
+          layer:routeLayer
+        });
+     
+        view.ui.add(new Expand({
+          view:view,
+          content:directions,
+          expanded:false,
+          }), "top-left");
+
+        map.add(routeLayer)
+
+     
+
+        const graphicsLayer = new GraphicsLayer();
+
+        view.when(() => {
+          const sketch = new Sketch({
+            layer: graphicsLayer,
+            view: view,
+            // graphic will be selected as soon as it is created
+            creationMode: "update"
+          });
+
+          view.ui.add(new Expand({
+          view:view,
+          content:sketch,
+          expanded:false,
+          mode:"floating"}), "top-left");
+        });
+
+        const toggle = new BasemapToggle({
+          // 2 - Set properties
+          view: view, // view that provides access to the map's 'topo-vector' basemap
+          nextBasemap: "hybrid" // allows for toggling to the 'hybrid' basemap
+        });
+
+        // Add widget to the top right corner of the view
+        view.ui.add(toggle, "top-right");
+
+        view.when(() => {
+            const print = new Print({
+              view: view,
+              // specify your own print service
+              printServiceUrl:
+                "https://utility.arcgisonline.com/arcgis/rest/services/Utilities/PrintingTools/GPServer/Export%20Web%20Map%20Task"
+            });
+
+            // Add widget to the top right corner of the view
+            view.ui.add(new Expand({
+              view:view,
+              content:print,
+              expanded:false,
+              mode:"floating"}), "top-left");
+         });
+      
+
+        const searchWidget = new Search({
+          view: view
+        });
+
+        // Add the search widget to the top right corner of the view
+        view.ui.add(searchWidget, {
+          position: "bottom-right"
+        });
+
+        view.ui.add(new Expand({
+          view:view,
+          content:search,
+          expanded:true,
+          mode:"floating"}), "top-right"); // Add to the map
+
+        view.when(() => {
+          search.watch("activeSource", (source) =>{
+            search.search();
+          });
+        });
+
+      // Zoom to custom level
+        search.goToOverride = (view, goToParams)=> {
+          return view.goTo(
+            {
+              center: goToParams.target.target,
+              zoom: 12,
+            },
+            goToParams.options
+          );
+        };
+      
+
+
+    });
+  </script>
+</head>
+<body>
+  <div id="mainWindow" data-dojo-type="dijit/layout/BorderContainer" data-dojo-props="design:&#39;headline&#39;,gutters:false" style="width: 100%; height: 100%; margin: 0;">
+      <div id="header" data-dojo-type="dijit/layout/ContentPane" data-dojo-props="region:&#39;top&#39;">
+        COOPERATIVE SOCIETIES NAINITAL
+        <div id="subheader">CREDIT: GIS CELL NAINITAL (AUTHOR: GIS TECHNICIAN)</div>
+      </div>
+      <div id="viewDiv" class="shadow" data-dojo-type="dijit/layout/ContentPane" data-dojo-props="region:&#39;center&#39;">
+      </div>
+    </div>
+  <!-- <div id="viewDiv"></div> -->
+  
+  </div>
+</body>
+</html>
